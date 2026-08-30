@@ -1,0 +1,15 @@
+{
+	"luci-app-pwm-fan": {
+		"description": "Grant access to PWM fan status and configuration",
+		"read": {
+			"ubus": {
+				"pwm.fan": [ "status", "probe", "history", "config", "logs" ]
+			}
+		},
+		"write": {
+			"ubus": {
+				"pwm.fan": [ "validate_config", "save_config", "reset_config", "service_action", "clear_history", "clear_logs" ]
+			}
+		}
+	}
+}

@@ -1,0 +1,1135 @@
+.pwm-fan {
+	--pwm-accent: #3498db;
+	--pwm-cpu: #e67e22;
+	--pwm-modem: #9b59b6;
+	--pwm-success: #5cb85c;
+	--pwm-warning: #f0ad4e;
+	--pwm-danger: #d9534f;
+	--pwm-surface: rgba(127, 127, 127, .065);
+	--pwm-surface-strong: rgba(127, 127, 127, .11);
+	--pwm-border: rgba(127, 127, 127, .28);
+	--pwm-muted: rgba(127, 127, 127, .85);
+	display: grid;
+	gap: 1rem;
+	min-width: 0;
+}
+
+.pwm-fan *,
+.pwm-fan *::before,
+.pwm-fan *::after {
+	box-sizing: border-box;
+}
+
+.pwm-fan-card,
+.pwm-fan-metric {
+	border: 1px solid var(--pwm-border);
+	border-radius: .65rem;
+	background: var(--pwm-surface);
+}
+
+.pwm-fan-card {
+	min-width: 0;
+	padding: 1rem;
+}
+
+.pwm-fan-card-header {
+	display: flex;
+	align-items: center;
+	flex-wrap: wrap;
+	gap: .65rem;
+	margin-bottom: .85rem;
+}
+
+.pwm-fan-card-title {
+	margin: 0;
+	font-size: 1.15rem;
+	font-weight: 600;
+}
+
+.pwm-fan-card-actions {
+	display: flex;
+	align-items: center;
+	flex-wrap: wrap;
+	gap: .5rem;
+	margin-left: auto;
+}
+
+.pwm-fan-muted {
+	color: var(--pwm-muted);
+	font-size: .9rem;
+}
+
+.pwm-fan-metric {
+	display: grid;
+	grid-template-columns: auto minmax(0, 1fr);
+	gap: .75rem;
+	min-width: 0;
+	padding: .9rem;
+}
+
+.pwm-fan-metric-icon {
+	display: grid;
+	width: 2.35rem;
+	height: 2.35rem;
+	place-items: center;
+	border-radius: .55rem;
+	background: rgba(52, 152, 219, .14);
+	color: var(--pwm-accent);
+	font-size: 1.25rem;
+	font-weight: 700;
+}
+
+.pwm-fan-metric-icon .pwm-fan-status-icon {
+	width: 1.35rem;
+	height: 1.35rem;
+}
+
+.pwm-fan-metric.cpu .pwm-fan-metric-icon {
+	background: rgba(230, 126, 34, .14);
+	color: var(--pwm-cpu);
+}
+
+.pwm-fan-metric.modem .pwm-fan-metric-icon {
+	background: rgba(155, 89, 182, .14);
+	color: var(--pwm-modem);
+}
+
+.pwm-fan-metric-label {
+	color: var(--pwm-muted);
+	font-size: .82rem;
+	line-height: 1.2;
+}
+
+.pwm-fan-metric-value {
+	margin-top: .18rem;
+	overflow: hidden;
+	font-size: 1.45rem;
+	font-weight: 650;
+	line-height: 1.15;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.pwm-fan-metric-detail {
+	margin-top: .2rem;
+	color: var(--pwm-muted);
+	font-size: .78rem;
+}
+
+.pwm-fan-badge {
+	display: inline-flex;
+	align-items: center;
+	gap: .35rem;
+	width: fit-content;
+	padding: .25rem .55rem;
+	border: 1px solid var(--pwm-border);
+	border-radius: 999px;
+	background: var(--pwm-surface-strong);
+	font-size: .8rem;
+	font-weight: 600;
+	white-space: nowrap;
+}
+
+.pwm-fan-badge.success {
+	border-color: rgba(92, 184, 92, .55);
+	color: var(--pwm-success);
+}
+
+.pwm-fan-badge.warning {
+	border-color: rgba(240, 173, 78, .55);
+	color: var(--pwm-warning);
+}
+
+.pwm-fan-badge.error {
+	border-color: rgba(217, 83, 79, .55);
+	color: var(--pwm-danger);
+}
+
+.pwm-fan-monitor-overview {
+	display: grid;
+	grid-template-columns: minmax(20rem, 1.05fr) minmax(22rem, 1fr);
+	gap: 1rem;
+}
+
+.pwm-fan-cooling-card {
+	display: grid;
+	grid-template-rows: auto 1fr;
+}
+
+.pwm-fan-cooling {
+	display: grid;
+	grid-template-columns: minmax(10rem, .85fr) minmax(12rem, 1.15fr);
+	align-items: center;
+	gap: 1rem;
+	min-height: 15rem;
+}
+
+.pwm-fan-cooling-output {
+	display: grid;
+	justify-items: center;
+	gap: .35rem;
+}
+
+.pwm-fan-output-ring {
+	position: relative;
+	display: grid;
+	width: 9.5rem;
+	height: 9.5rem;
+	place-items: center;
+}
+
+.pwm-fan-output-ring::before {
+	position: absolute;
+	inset: 0;
+	border-radius: 50%;
+	background:
+		conic-gradient(var(--pwm-accent)
+			calc(var(--pwm-output) * 1%),
+			var(--pwm-surface-strong) 0);
+	content: "";
+	-webkit-mask:
+		radial-gradient(farthest-side,
+			transparent calc(100% - .75rem), #000 0);
+	mask:
+		radial-gradient(farthest-side,
+			transparent calc(100% - .75rem), #000 0);
+}
+
+.pwm-fan-output-ring.unavailable::before {
+	opacity: .45;
+}
+
+.pwm-fan-output-ring strong {
+	font-size: 2.25rem;
+	font-weight: 650;
+}
+
+.pwm-fan-cooling-rpm {
+	font-size: 1.35rem;
+	font-weight: 600;
+}
+
+.pwm-fan-cooling-details {
+	display: flex;
+	align-items: baseline;
+	justify-content: center;
+	flex-wrap: wrap;
+	gap: .25rem .6rem;
+}
+
+.pwm-fan-cooling-summary {
+	display: grid;
+	gap: 1rem;
+}
+
+.pwm-fan-cooling-status,
+.pwm-fan-cooling-mode {
+	display: flex;
+	align-items: center;
+	gap: .65rem;
+}
+
+.pwm-fan-cooling-status.success {
+	color: var(--pwm-success);
+}
+
+.pwm-fan-cooling-status.warning {
+	color: var(--pwm-warning);
+}
+
+.pwm-fan-cooling-status.error {
+	color: var(--pwm-danger);
+}
+
+.pwm-fan-cooling-mode .pwm-fan-status-icon {
+	color: var(--pwm-accent);
+}
+
+.pwm-fan-status-icon {
+	width: 1.55rem;
+	height: 1.55rem;
+	flex: 0 0 auto;
+}
+
+.pwm-fan-temperature-stack {
+	display: grid;
+	gap: .75rem;
+}
+
+.pwm-fan-temperature-card,
+.pwm-fan-thermal-floor {
+	border: 1px solid var(--pwm-border);
+	border-radius: .65rem;
+	background: var(--pwm-surface);
+}
+
+.pwm-fan-temperature-card {
+	display: grid;
+	gap: .85rem;
+	padding: .85rem 1rem;
+}
+
+.pwm-fan-temperature-heading {
+	display: grid;
+	grid-template-columns: auto minmax(0, 1fr) auto;
+	align-items: center;
+	gap: .65rem;
+}
+
+.pwm-fan-temperature-label {
+	font-weight: 600;
+}
+
+.pwm-fan-temperature-value {
+	font-size: 1.45rem;
+	white-space: nowrap;
+}
+
+.pwm-fan-temperature-card.cpu .pwm-fan-status-icon,
+.pwm-fan-temperature-card.cpu .pwm-fan-temperature-value {
+	color: var(--pwm-cpu);
+}
+
+.pwm-fan-temperature-card.modem .pwm-fan-status-icon,
+.pwm-fan-temperature-card.modem .pwm-fan-temperature-value {
+	color: var(--pwm-modem);
+}
+
+.pwm-fan-temperature-scale {
+	display: grid;
+	grid-template-columns: auto minmax(4rem, 1fr) auto;
+	align-items: center;
+	gap: .6rem;
+	color: var(--pwm-muted);
+	font-size: .72rem;
+}
+
+.pwm-fan-temperature-track {
+	position: relative;
+	height: .45rem;
+	border-radius: 999px;
+	background: var(--pwm-surface-strong);
+}
+
+.pwm-fan-temperature-fill {
+	position: absolute;
+	inset: 0 auto 0 0;
+	border-radius: inherit;
+	background: var(--pwm-cpu);
+}
+
+.pwm-fan-temperature-card.modem .pwm-fan-temperature-fill {
+	background: var(--pwm-modem);
+}
+
+.pwm-fan-temperature-marker {
+	position: absolute;
+	top: 50%;
+	width: 2px;
+	height: .9rem;
+	background: currentColor;
+	transform: translate(-1px, -50%);
+}
+
+.pwm-fan-temperature-scale.unavailable {
+	opacity: .45;
+}
+
+.pwm-fan-thermal-floor {
+	display: grid;
+	grid-template-columns: auto minmax(0, 1fr) auto;
+	align-items: center;
+	gap: .65rem;
+	padding: .75rem 1rem;
+}
+
+.pwm-fan-thermal-floor .pwm-fan-status-icon,
+.pwm-fan-floor-value {
+	color: var(--pwm-accent);
+}
+
+.pwm-fan-thermal-floor.active {
+	border-color: rgba(240, 173, 78, .55);
+}
+
+.pwm-fan-thermal-floor.active .pwm-fan-status-icon,
+.pwm-fan-thermal-floor.active .pwm-fan-floor-value {
+	color: var(--pwm-warning);
+}
+
+.pwm-fan-history svg,
+.pwm-fan-curve svg {
+	overflow: visible;
+}
+
+.pwm-fan-curve-body {
+	display: grid;
+	gap: .35rem;
+}
+
+.pwm-fan-curve-toolbar {
+	display: flex;
+	align-items: center;
+	flex-wrap: wrap;
+	gap: .45rem .75rem;
+}
+
+.pwm-fan-curve-actions {
+	display: flex;
+	margin-left: auto;
+}
+
+.pwm-fan-curve-legends {
+	display: flex;
+	align-items: center;
+	flex-wrap: wrap;
+	gap: .3rem .65rem;
+	font-size: .82rem;
+}
+
+.pwm-fan-curve-legends > * {
+	display: inline-flex;
+	align-items: center;
+	gap: .3rem;
+}
+
+.pwm-fan-curve-key {
+	display: inline-block;
+	width: 1.1rem;
+	border-top: 3px solid var(--pwm-accent);
+}
+
+.pwm-fan-curve-key.floor {
+	border-top-color: var(--pwm-danger);
+	border-top-style: dashed;
+}
+
+.pwm-fan-curve-readout {
+	position: absolute;
+	z-index: 3;
+	padding: .3rem .5rem;
+	border: 1px solid var(--pwm-border);
+	border-radius: .35rem;
+	background: #20252b;
+	box-shadow: 0 .3rem .8rem rgba(0, 0, 0, .24);
+	color: #fff;
+	font-size: .82rem;
+	font-weight: 600;
+	opacity: 0;
+	pointer-events: none;
+	white-space: nowrap;
+}
+
+.pwm-fan-curve-readout.active {
+	opacity: 1;
+}
+
+.pwm-fan-curve-chart {
+	position: relative;
+	min-width: 0;
+}
+
+.pwm-fan-curve-svg {
+	max-width: 78rem;
+	margin: 0 auto;
+}
+
+.pwm-fan-history-toolbar {
+	display: flex;
+	align-items: center;
+	flex-wrap: wrap;
+	gap: .55rem;
+	margin-bottom: .5rem;
+}
+
+.pwm-fan-history-notice {
+	margin: 0 0 .75rem;
+	color: var(--pwm-warning);
+}
+
+.pwm-fan-history-control {
+	display: inline-flex;
+	align-items: center;
+	gap: .35rem;
+}
+
+.pwm-fan-history-control.window {
+	margin-left: auto;
+}
+
+.pwm-fan-history-legends {
+	display: flex;
+	align-items: center;
+	flex-wrap: wrap;
+	gap: .55rem;
+}
+
+.pwm-fan-legend {
+	display: inline-flex;
+	align-items: center;
+	gap: .4rem;
+	padding: .28rem .55rem;
+	border: 1px solid var(--pwm-border);
+	border-radius: .4rem;
+	background: transparent;
+	cursor: pointer;
+	user-select: none;
+}
+
+.pwm-fan-legend::before {
+	width: .65rem;
+	height: .65rem;
+	border-radius: .18rem;
+	background: var(--pwm-legend-color, var(--pwm-accent));
+	content: "";
+}
+
+.pwm-fan-legend[aria-pressed="false"] {
+	opacity: .48;
+	text-decoration: line-through;
+}
+
+.pwm-fan-legend:focus-visible,
+.pwm-fan-tabs button:focus-visible,
+.pwm-fan-filters button:focus-visible,
+.pwm-fan-segment button:focus-visible {
+	outline: 2px solid var(--pwm-accent);
+	outline-offset: 2px;
+}
+
+.pwm-fan-chart-tip {
+	position: absolute;
+	z-index: 2;
+	display: none;
+	min-width: 10rem;
+	padding: .55rem .65rem;
+	border: 1px solid var(--pwm-border);
+	border-radius: .45rem;
+	background: #20252b;
+	box-shadow: 0 .4rem 1rem rgba(0, 0, 0, .28);
+	color: #fff;
+	font-size: .78rem;
+	pointer-events: none;
+}
+
+.pwm-fan-chart-tip.open {
+	display: grid;
+	gap: .2rem;
+}
+
+.pwm-fan-chart-wrap {
+	position: relative;
+	min-width: 0;
+}
+
+.pwm-fan-tabs,
+.pwm-fan-filters {
+	display: flex;
+	align-items: center;
+	gap: .25rem;
+	width: fit-content;
+	padding: .25rem;
+	border: 1px solid var(--pwm-border);
+	border-radius: .55rem;
+	background: var(--pwm-surface);
+}
+
+.pwm-fan-tabs button,
+.pwm-fan-filters button,
+.pwm-fan-segment button {
+	min-height: 2.2rem;
+	padding: .4rem .8rem;
+	border: 0;
+	border-radius: .4rem;
+	background: transparent;
+	color: inherit;
+	cursor: pointer;
+}
+
+.pwm-fan-tabs button.active,
+.pwm-fan-filters button.active,
+.pwm-fan-segment button.active {
+	background: var(--pwm-accent);
+	color: #fff;
+}
+
+.pwm-fan-tabs button:disabled {
+	opacity: .45;
+	cursor: not-allowed;
+}
+
+.pwm-fan-history-card {
+	margin-top: 1rem;
+}
+
+.pwm-fan-panel {
+	display: none;
+}
+
+.pwm-fan-panel.active {
+	display: grid;
+	gap: 1rem;
+}
+
+.pwm-fan-grid-2 {
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap: 1rem;
+}
+
+.pwm-fan-field-grid {
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap: .85rem 1rem;
+}
+
+.pwm-fan-field {
+	display: grid;
+	align-content: start;
+	gap: .35rem;
+	min-width: 0;
+}
+
+.pwm-fan-field.wide {
+	grid-column: 1 / -1;
+}
+
+.pwm-fan-field > label,
+.pwm-fan-field-label {
+	font-size: .88rem;
+	font-weight: 600;
+}
+
+.pwm-fan-field input:not([type="checkbox"]),
+.pwm-fan-field select {
+	width: 100%;
+	min-width: 0;
+}
+
+.pwm-fan-field-help,
+.pwm-fan-error {
+	font-size: .78rem;
+	line-height: 1.35;
+}
+
+.pwm-fan-field-help {
+	color: var(--pwm-muted);
+}
+
+.pwm-fan-error {
+	min-height: 1em;
+	color: var(--pwm-danger);
+}
+
+.pwm-fan-field.invalid input,
+.pwm-fan-field.invalid select {
+	border-color: var(--pwm-danger) !important;
+}
+
+.pwm-fan-switch-row {
+	display: flex;
+	align-items: center;
+	gap: .65rem;
+	min-height: 2.35rem;
+}
+
+.pwm-fan-switch {
+	position: relative;
+	width: 2.65rem;
+	height: 1.45rem;
+	flex: 0 0 auto;
+}
+
+.pwm-fan-switch input {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	opacity: 0;
+}
+
+.pwm-fan-switch span {
+	position: absolute;
+	inset: 0;
+	border: 1px solid var(--pwm-border);
+	border-radius: 999px;
+	background: var(--pwm-surface-strong);
+	cursor: pointer;
+	transition: background .15s ease;
+}
+
+.pwm-fan-switch span::after {
+	position: absolute;
+	top: .16rem;
+	left: .18rem;
+	width: 1rem;
+	height: 1rem;
+	border-radius: 50%;
+	background: currentColor;
+	content: "";
+	transition: transform .15s ease;
+}
+
+.pwm-fan-switch input:checked + span {
+	border-color: var(--pwm-accent);
+	background: var(--pwm-accent);
+	color: #fff;
+}
+
+.pwm-fan-switch input:checked + span::after {
+	transform: translateX(1.15rem);
+}
+
+.pwm-fan-switch input:focus-visible + span {
+	outline: 2px solid var(--pwm-accent);
+	outline-offset: 2px;
+}
+
+.pwm-fan-switch input:disabled + span {
+	cursor: not-allowed;
+	opacity: .45;
+}
+
+.pwm-fan-segment {
+	display: grid;
+	grid-auto-flow: column;
+	grid-auto-columns: 1fr;
+	padding: .2rem;
+	border: 1px solid var(--pwm-border);
+	border-radius: .5rem;
+	background: var(--pwm-surface);
+}
+
+.pwm-fan-hardware-list {
+	display: grid;
+	gap: .55rem;
+}
+
+.pwm-fan-hardware-row {
+	display: grid;
+	grid-template-columns: minmax(10rem, .75fr) minmax(0, 1.25fr);
+	gap: 1rem;
+	padding: .65rem .75rem;
+	border: 1px solid var(--pwm-border);
+	border-radius: .45rem;
+}
+
+.pwm-fan-hardware-name {
+	font-weight: 600;
+}
+
+.pwm-fan-log-toolbar {
+	display: flex;
+	align-items: center;
+	gap: .5rem;
+	margin-bottom: 1rem;
+}
+
+.pwm-fan-log-clear {
+	white-space: nowrap;
+}
+
+.pwm-fan-log-clear-short {
+	display: none;
+}
+
+.pwm-fan-log-list {
+	display: grid;
+	gap: .55rem;
+}
+
+.pwm-fan-log-entry {
+	border: 1px solid var(--pwm-border);
+	border-left: .28rem solid var(--pwm-accent);
+	border-radius: .5rem;
+	background: var(--pwm-surface);
+}
+
+.pwm-fan-log-entry.warning {
+	border-left-color: var(--pwm-warning);
+}
+
+.pwm-fan-log-entry.error {
+	border-left-color: var(--pwm-danger);
+}
+
+.pwm-fan-log-entry summary {
+	display: grid;
+	grid-template-columns: auto minmax(8rem, 1fr) auto;
+	align-items: center;
+	gap: .7rem;
+	padding: .75rem;
+	cursor: pointer;
+	list-style: none;
+}
+
+.pwm-fan-log-entry summary::-webkit-details-marker {
+	display: none;
+}
+
+.pwm-fan-log-entry summary::after {
+	content: "›";
+	font-size: 1.25rem;
+	transition: transform .15s ease;
+}
+
+.pwm-fan-log-entry[open] summary::after {
+	transform: rotate(90deg);
+}
+
+.pwm-fan-log-detail {
+	padding: 0 .75rem .8rem 2.45rem;
+	color: var(--pwm-muted);
+}
+
+.pwm-fan-empty {
+	display: grid;
+	min-height: 8rem;
+	place-items: center;
+	padding: 1rem;
+	color: var(--pwm-muted);
+	text-align: center;
+}
+
+.pwm-fan-hidden {
+	display: none !important;
+}
+
+@media (max-width: 1100px) {
+	.pwm-fan-monitor-overview {
+		grid-template-columns: 1fr;
+	}
+}
+
+@media (max-width: 700px) {
+	.pwm-fan-grid-2,
+	.pwm-fan-field-grid {
+		grid-template-columns: 1fr;
+	}
+
+	.pwm-fan-field.wide {
+		grid-column: auto;
+	}
+
+	.pwm-fan-curve-legends {
+		flex-basis: 100%;
+	}
+
+	.pwm-fan-card {
+		padding: .8rem;
+	}
+
+	.pwm-fan-cooling {
+		grid-template-columns: minmax(6.25rem, .8fr) minmax(0, 1.2fr);
+		align-items: center;
+		gap: .65rem;
+		min-height: 0;
+	}
+
+	.pwm-fan-output-ring {
+		width: 6.25rem;
+		height: 6.25rem;
+	}
+
+	.pwm-fan-output-ring::before {
+		-webkit-mask:
+			radial-gradient(farthest-side,
+				transparent calc(100% - .55rem), #000 0);
+		mask:
+			radial-gradient(farthest-side,
+				transparent calc(100% - .55rem), #000 0);
+	}
+
+	.pwm-fan-output-ring strong {
+		font-size: 1.55rem;
+	}
+
+	.pwm-fan-cooling-output {
+		gap: .2rem;
+	}
+
+	.pwm-fan-cooling-rpm {
+		font-size: 1rem;
+	}
+
+	.pwm-fan-raw-pwm {
+		font-size: .72rem;
+	}
+
+	.pwm-fan-cooling-summary {
+		grid-template-columns: 1fr;
+		gap: .55rem;
+	}
+
+	.pwm-fan-cooling-status,
+	.pwm-fan-cooling-mode {
+		gap: .45rem;
+		font-size: .86rem;
+	}
+
+	.pwm-fan-cooling-status .pwm-fan-status-icon,
+	.pwm-fan-cooling-mode .pwm-fan-status-icon {
+		width: 1.2rem;
+		height: 1.2rem;
+	}
+
+	.pwm-fan-temperature-stack {
+		gap: .5rem;
+	}
+
+	.pwm-fan-temperature-card {
+		gap: .45rem;
+		padding: .55rem .7rem;
+	}
+
+	.pwm-fan-temperature-heading {
+		grid-template-columns: auto minmax(0, 1fr) auto;
+		gap: .5rem;
+	}
+
+	.pwm-fan-temperature-heading .pwm-fan-status-icon {
+		width: 1.25rem;
+		height: 1.25rem;
+	}
+
+	.pwm-fan-temperature-heading .pwm-fan-muted {
+		font-size: .72rem;
+	}
+
+	.pwm-fan-temperature-value {
+		font-size: 1.1rem;
+	}
+
+	.pwm-fan-temperature-scale {
+		gap: .4rem;
+		font-size: .64rem;
+	}
+
+	.pwm-fan-temperature-track {
+		height: .35rem;
+	}
+
+	.pwm-fan-thermal-floor {
+		grid-template-columns: auto minmax(0, 1fr) auto;
+		gap: .45rem;
+		padding: .5rem .7rem;
+		font-size: .8rem;
+	}
+
+	.pwm-fan-thermal-floor .pwm-fan-muted {
+		font-size: .72rem;
+	}
+
+	.pwm-fan-history-toolbar {
+		display: grid;
+		grid-template-areas:
+			"plot window"
+			"legends legends";
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		gap: .45rem;
+	}
+
+	.pwm-fan-history-control.plot {
+		grid-area: plot;
+	}
+
+	.pwm-fan-history-control {
+		display: grid;
+		grid-template-columns: auto minmax(0, 1fr);
+		gap: .3rem;
+		min-width: 0;
+		font-size: .78rem;
+	}
+
+	.pwm-fan-history-control.window {
+		grid-area: window;
+		margin-left: 0;
+	}
+
+	.pwm-fan-history-control select {
+		width: 100%;
+		min-width: 0;
+		padding-right: 1.5rem;
+	}
+
+	.pwm-fan-history-legends {
+		grid-area: legends;
+		flex-wrap: nowrap;
+		gap: .3rem;
+		min-width: 0;
+	}
+
+	.pwm-fan-legend {
+		min-width: 0;
+		padding: .22rem .35rem;
+		gap: .28rem;
+		font-size: .72rem;
+		white-space: nowrap;
+	}
+
+	.pwm-fan-legend > span {
+		display: none;
+	}
+
+	.pwm-fan-legend::before {
+		width: .5rem;
+		height: .5rem;
+		flex: 0 0 auto;
+	}
+
+	.pwm-fan-legend::after {
+		overflow: hidden;
+		content: attr(data-compact);
+		text-overflow: ellipsis;
+	}
+
+	.pwm-fan-segment {
+		grid-auto-columns: minmax(0, 1fr);
+	}
+
+	.pwm-fan-segment button {
+		min-width: 0;
+		min-height: 2rem;
+		padding: .3rem .35rem;
+		font-size: .76rem;
+		white-space: nowrap;
+	}
+
+	.pwm-fan-field input[type="number"] {
+		width: 7rem;
+		max-width: 100%;
+	}
+
+	.pwm-fan-hardware-row {
+		grid-template-columns: 1fr;
+		gap: .25rem;
+	}
+
+	.pwm-fan-log-entry summary {
+		grid-template-columns: auto minmax(0, 1fr) auto;
+	}
+
+	.pwm-fan-log-entry summary::after {
+		grid-column: 3;
+		grid-row: 1;
+		justify-self: end;
+	}
+
+	.pwm-fan-filters {
+		max-width: 100%;
+		overflow-x: auto;
+	}
+
+	.pwm-fan-filters button {
+		padding: .35rem .55rem;
+		white-space: nowrap;
+	}
+
+	.pwm-fan-log-clear {
+		min-height: 2rem;
+		padding: .3rem .55rem;
+		font-size: .76rem;
+	}
+
+	.pwm-fan-log-clear-full {
+		display: none;
+	}
+
+	.pwm-fan-log-clear-short {
+		display: inline;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.pwm-fan *,
+	.pwm-fan *::before,
+	.pwm-fan *::after {
+		scroll-behavior: auto !important;
+		transition: none !important;
+	}
+}
+
+.pwm-fan-live-health {
+	display: grid;
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+	gap: .65rem;
+	margin-bottom: .8rem;
+}
+
+.pwm-fan-health-item {
+	display: grid;
+	grid-template-columns: auto 1fr;
+	align-items: center;
+	gap: .15rem .5rem;
+	padding: .65rem .8rem;
+	border: 1px solid var(--pwm-border);
+	border-radius: .75rem;
+	background: var(--pwm-surface);
+}
+
+.pwm-fan-health-item strong {
+	grid-column: 2;
+	font-size: .82rem;
+}
+
+.pwm-fan-health-dot {
+	grid-row: 1 / span 2;
+	width: .7rem;
+	height: .7rem;
+	border-radius: 50%;
+	background: var(--pwm-success);
+}
+
+.pwm-fan-health-item.warning .pwm-fan-health-dot {
+	background: var(--pwm-warning);
+}
+
+.pwm-fan-health-item.error .pwm-fan-health-dot {
+	background: var(--pwm-danger);
+}
+
+.pwm-fan-health-item.disabled .pwm-fan-health-dot {
+	background: var(--pwm-muted);
+}
+
+.pwm-fan-recovery {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 1rem;
+}
+
+.pwm-fan-recovery-host:not(:empty) {
+	margin-top: 1rem;
+}
+
+.pwm-fan-recovery p {
+	margin: 0;
+}
+
+.pwm-fan-recovery .pwm-fan-switch-row {
+	flex: 0 0 auto;
+}
+
+@media (max-width: 700px) {
+	.pwm-fan-live-health {
+		gap: .35rem;
+	}
+
+	.pwm-fan-health-item {
+		padding: .45rem;
+		font-size: .72rem;
+	}
+
+	.pwm-fan-health-item strong {
+		font-size: .7rem;
+	}
+
+	.pwm-fan-recovery {
+		align-items: stretch;
+		flex-direction: column;
+	}
+
+	.pwm-fan-recovery .pwm-fan-switch-row {
+		justify-content: space-between;
+	}
+}
