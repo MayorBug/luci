@@ -78,6 +78,8 @@ in LuCI.
 Representative behavior:
 
 - controller crash or stale heartbeat: current status unavailable
+- unsupported kernel policy at startup: configured mode preserved, active mode
+  shown as Kernel, control marked degraded, and read-only monitoring continues
 - required CPU temperature missing: hardware and control error in a control
   role, with a full-output attempt
 - optional modem unavailable: modem degraded, CPU control continues
@@ -94,9 +96,11 @@ Representative behavior:
 pwm-fan-control probe -c FILE --json
 ```
 
-returns config validity, applicability diagnostics, static hardware identity,
-tach availability, PWM readability/writability, and complete normalized DTS
-policy.
+returns config validity, control applicability, observation availability,
+diagnostics, hardware identity, tach availability, PWM readability/writability,
+one read-only CPU/PWM/RPM telemetry sample, and the normalized DTS policy when
+available. A policy-invalid result can therefore remain observable even though
+userspace control is inapplicable.
 
 The probe:
 
@@ -108,8 +112,8 @@ The probe:
 - is called only on explicit request.
 
 Monitoring does not request this probe. Settings requests it when Hardware
-opens or Curve mode needs policy data. Both views reuse its static policy and
-hardware metadata.
+opens or Curve mode needs policy data. Both views reuse its policy, hardware
+metadata, and bounded read-only sample.
 
 Auto and Curve show which temperature source controls the current output. The
 curve marker uses the filtered control temperature. It does not use raw CPU
@@ -261,8 +265,10 @@ writing it back as a sample. The simple user-facing graph includes:
 Requested, kernel-floor, and effective PWM remain in each backend history
 record for diagnostics but are not additional visual series.
 
-Raw PWM is converted to percentage only while formatting axes, legends, and
-tooltips. Missing values create gaps.
+Raw PWM is converted to normalized cooling percentage using the validated
+ascending or descending policy direction while formatting axes, legends, and
+tooltips. Missing values or missing direction create gaps rather than invented
+cooling percentages.
 
 Legend visibility and time-window choices can use `localStorage` because they
 are presentation preferences. A storage error can show a graph-local notice
@@ -270,20 +276,22 @@ but never changes daemon or hardware health.
 
 ## Curve and policy visualization
 
-Settings starts one hardware probe after its first paint. The Curve mode editor
-reuses this result for the static kernel-policy graph. Settings loads the Curve
-module only when the Mode tab shows Curve mode.
+Settings requests one lazy, shared hardware probe only when Hardware opens or
+Curve mode needs policy data. The Curve editor reuses this result for the static
+kernel-policy graph. Settings loads the Curve module only when the Mode tab
+shows Curve mode.
 
 The Curve graph displays:
 
 1. configured userspace Curve
 2. complete static DTS minimum-cooling staircase
-3. current raw CPU-temperature marker when status is fresh
-4. current evaluated kernel-floor state and raw PWM
-5. current actual raw PWM.
+3. current filtered control-temperature marker when status is fresh
+4. current evaluated kernel-floor state and direction-normalized cooling output
+5. current actual direction-normalized cooling output.
 
 The DTS staircase comes only from `probe.kernel_policy.points`. Each point
-shows state, raw PWM, display percentage, trip, hysteresis, and release
+shows state, raw PWM, direction-normalized cooling percentage, trip,
+hysteresis, and release
 temperature. Hysteresis is represented visually or in the point details.
 
 The live floor comes only from daemon status. `cur_state` is never used.
@@ -328,9 +336,10 @@ Restarting software is not presented as a repair for fan power, wiring,
 tachometer, or PWM hardware faults.
 
 An initial configuration, hardware-discovery, or Kernel-handoff failure is
-written to logd as `controller_start_failed` before the daemon exits. This
-keeps installation-time failures visible on the Logs page even though no live
-runtime snapshot exists yet.
+written to logd as `controller_start_failed` before the daemon exits. A policy
+that cannot be normalized safely is different: the daemon emits one
+`kernel_monitor_fallback` warning, leaves the saved mode unchanged, enters an
+active Kernel observer, and continues publishing read-only hardware telemetry.
 
 ## Browser responsibilities
 

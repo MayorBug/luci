@@ -1664,3 +1664,23 @@ msgstr ""
 #: applications/luci-app-pwm-fan/htdocs/luci-static/resources/pwm/fan_format.js:363
 msgid "unknown temperature"
 msgstr ""
+
+#: applications/luci-app-pwm-fan/htdocs/luci-static/resources/pwm/fan_format.js
+msgid "The kernel thermal policy is not safe for userspace control. The kernel remains in control while monitoring continues."
+msgstr ""
+
+#: applications/luci-app-pwm-fan/htdocs/luci-static/resources/pwm/fan_format.js
+msgid "Kernel monitoring fallback"
+msgstr ""
+
+#: applications/luci-app-pwm-fan/htdocs/luci-static/resources/pwm/fan_format.js
+msgid "kernel policy unsupported for safe userspace control"
+msgstr ""
+
+#: applications/luci-app-pwm-fan/htdocs/luci-static/resources/pwm/fan_format.js
+msgid "The saved %s mode cannot safely control this kernel policy. The kernel remains in control and hardware monitoring continues."
+msgstr ""
+
+#: applications/luci-app-pwm-fan/htdocs/luci-static/resources/view/system/pwm-fan/monitoring.js
+msgid "Kernel monitoring only"
+msgstr ""

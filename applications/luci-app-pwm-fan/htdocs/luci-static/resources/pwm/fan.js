@@ -64,8 +64,11 @@ var callFanLogs = rpc.declare({
 	method: 'logs',
 	expect: { '': { entries: [], size_bytes: 0, retention_days: 7 } }
 });
-function pwmPercent(value) {
-	return value == null ? null : Math.round(+value * 100 / 255);
+function pwmPercent(value, direction) {
+	if (value == null || [ 'ascending', 'descending' ].indexOf(direction) < 0)
+		return null;
+	value = +value;
+	return Math.round((direction === 'descending' ? 255 - value : value) * 100 / 255);
 }
 
 function loadStatus() {
@@ -81,11 +84,12 @@ function presentStatus(raw, probeResult) {
 	var configured = raw.configured_mode;
 	var tachEnabled = raw.tach_enabled === true;
 	var modemSource = raw.modem_source || 'off';
+	var direction = raw.kernel_policy_direction || policy.direction;
 	var actualPwm = raw.actual_pwm != null ? raw.actual_pwm : found.actual_pwm;
-	var actual = pwmPercent(actualPwm);
-	var effective = pwmPercent(raw.effective_pwm);
-	var requested = pwmPercent(raw.requested_pwm);
-	var floor = pwmPercent(raw.kernel_floor_pwm);
+	var actual = pwmPercent(actualPwm, direction);
+	var effective = pwmPercent(raw.effective_pwm, direction);
+	var requested = pwmPercent(raw.requested_pwm, direction);
+	var floor = pwmPercent(raw.kernel_floor_pwm, direction);
 	var health = raw.health || {};
 	var daemonHardwareAvailable = raw.controller_fresh === true &&
 		raw.hardware_state != null && raw.hardware_state !== 'unknown';
@@ -131,6 +135,9 @@ function presentStatus(raw, probeResult) {
 			kernel: {
 				state: raw.kernel_floor_state,
 				max_state: policy.max_state,
+				direction: direction,
+				strongest_pwm: raw.kernel_strongest_pwm != null
+					? raw.kernel_strongest_pwm : policy.strongest_pwm,
 				floor_percent: floor,
 				policy: policy
 			}
@@ -172,7 +179,7 @@ function presentStatus(raw, probeResult) {
 	};
 }
 
-function presentHistory(result) {
+function presentHistory(result, direction) {
 	return {
 		hours: 24,
 		enabled: result.available !== false,
@@ -182,7 +189,7 @@ function presentHistory(result) {
 				timestamp: entry.timestamp,
 				temperature: entry.cpu_temperature_millic,
 				modem_temperature: entry.modem_temperature_millic,
-				setpoint: pwmPercent(entry.actual_pwm),
+				setpoint: pwmPercent(entry.actual_pwm, direction),
 				rpm: entry.rpm
 			};
 		})
@@ -244,10 +251,10 @@ return baseclass.extend({
 	serviceAction: function(action) {
 		return callServiceAction(action);
 	},
-	loadHistory: function() {
+	loadHistory: function(direction) {
 		return L.resolveDefault(callFanHistory(), {
 			available: false, entries: []
-		}).then(presentHistory);
+		}).then(function(result) { return presentHistory(result, direction); });
 	},
 	loadLogs: function() {
 		return L.resolveDefault(callFanLogs(), { entries: [], size_bytes: 0 });
@@ -258,5 +265,6 @@ return baseclass.extend({
 	clearLogs: function() {
 		return callClearLogs();
 	},
-	presentStatus: presentStatus
+	presentStatus: presentStatus,
+	presentHistory: presentHistory
 });

@@ -86,6 +86,7 @@ if (unavailableStatus.hardware.hwmon.pwm !== null ||
 const zeroStatus = fanModule.presentStatus({
 	configuration_state: 'valid',
 	configured_mode: 'kernel',
+	kernel_policy_direction: 'ascending',
 	actual_pwm: 0
 });
 
@@ -133,5 +134,72 @@ const inapplicableProbe = fanModule.presentStatus({
 
 if (inapplicableProbe.hardware.available)
 	fail('An inapplicable probe is presented as available hardware');
+
+const invertedStatus = fanModule.presentStatus({
+	configuration_state: 'valid',
+	configured_mode: 'manual',
+	active_mode: 'manual',
+	controller_running: true,
+	controller_fresh: true,
+	hardware_state: 'healthy',
+	kernel_policy_direction: 'descending',
+	kernel_strongest_pwm: 0,
+	requested_pwm: 127,
+	effective_pwm: 127,
+	actual_pwm: 127,
+	kernel_floor_pwm: 255
+});
+if (invertedStatus.control.requested_percent !== 50 ||
+	invertedStatus.hardware.hwmon.pwm_percent !== 50 ||
+	invertedStatus.hardware.kernel.floor_percent !== 0 ||
+	invertedStatus.hardware.kernel.strongest_pwm !== 0)
+	fail('Inverted raw PWM is not presented as normalized cooling output');
+
+const fallbackStatus = fanModule.presentStatus({
+	configuration_state: 'valid',
+	configured_mode: 'curve',
+	active_mode: 'kernel',
+	controller_running: true,
+	controller_fresh: true,
+	hardware_state: 'error',
+	control_state: 'error',
+	control_reason: 'kernel_policy_invalid',
+	cpu_temperature_millic: 51000,
+	actual_pwm: 77,
+	requested_pwm: null,
+	effective_pwm: null,
+	kernel_floor_pwm: null,
+	health: {
+		monitoring: { state: 'error', code: 'kernel_policy_invalid' },
+		controller: { state: 'error', code: 'kernel_policy_invalid' },
+		history: { state: 'healthy', code: 'none' }
+	}
+});
+if (fallbackStatus.modes.configured !== 'curve' ||
+	fallbackStatus.modes.active !== 'kernel' ||
+	!fallbackStatus.service.running || !fallbackStatus.hardware.available ||
+	fallbackStatus.hardware.thermal.temperature_millic !== 51000 ||
+	fallbackStatus.hardware.hwmon.pwm !== 77 ||
+	fallbackStatus.hardware.hwmon.pwm_percent !== null ||
+	fallbackStatus.control.effective_percent !== null ||
+	fallbackStatus.control.requested_percent !== null)
+	fail('Kernel monitor fallback does not preserve raw-only read-only status');
+
+const invertedHistory = fanModule.presentHistory({
+	available: true,
+	entries: [ { timestamp: 1, actual_pwm: 0, rpm: 1200 } ]
+}, 'descending');
+if (invertedHistory.samples[0].setpoint !== 100)
+	fail('Inverted history does not graph normalized cooling output');
+if (fanModule.presentHistory({ entries: [ { actual_pwm: 77 } ] }, null)
+	.samples[0].setpoint !== null)
+	fail('History invents cooling percentage without a validated direction');
+
+const invertedPolicy = curveModule.parseKernelPolicy({
+	direction: 'descending',
+	points: [ { trip_temperature_millic: 60000, pwm: 0, state: 2 } ]
+});
+if (invertedPolicy.length !== 1 || invertedPolicy[0].percent !== 100)
+	fail('Curve policy graph does not normalize inverted raw PWM');
 
 console.log(`PWM fan frontend behavior passed (${checkedCurveCases} curve cases).`);

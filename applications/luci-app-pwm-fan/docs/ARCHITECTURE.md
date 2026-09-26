@@ -45,14 +45,18 @@ Changes to `hwmon_name` or `thermal_zone` require a restart. The old daemon
 returns its hardware to the kernel before the new daemon starts.
 
 Monitoring uses a fresh daemon snapshot for active mode, tachometer, modem,
-hardware names, and health. It does not request a hardware probe. Saved
-configuration describes the candidate on disk.
+hardware names, policy direction, and health. It does not request a hardware
+probe. Saved configuration describes the candidate on disk. During an
+unsupported-policy fallback, it presents the saved configured mode separately
+from the active Kernel observer and does not offer userspace control as active.
 
 Settings paints a loading shell first. It then loads configuration and status
 at the same time. It requests one hardware probe only when Hardware opens or
 Curve mode needs policy data. Hardware and the Curve mode editor reuse the
-probe result. Probe data contains only static device paths and kernel-policy
-details.
+probe result. Probe data contains device paths, policy direction and points,
+applicability diagnostics, and one read-only CPU/PWM/RPM telemetry sample. An
+invalid policy may still report `observation_available=true`; probing never
+writes PWM.
 
 Monitoring paints current status before it loads the history graph and data.
 It keeps the dashboard nodes and updates their live values during polling.

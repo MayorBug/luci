@@ -59,6 +59,8 @@ function errorName(error) {
 		return _('PWM control failed and userspace control was released.');
 	case 'policy_unavailable':
 		return _('The device-defined kernel thermal policy could not be read.');
+	case 'kernel_policy_invalid':
+		return _('The kernel thermal policy is not safe for userspace control. The kernel remains in control while monitoring continues.');
 	case 'pwm_write_failed':
 		return _('The requested PWM output could not be written.');
 	case 'invalid_configuration':
@@ -317,6 +319,7 @@ function eventName(code) {
 	case 'modem_temperature_lost': return _('Modem temperature unavailable');
 	case 'modem_temperature_recovered': return _('Modem temperature restored');
 	case 'kernel_policy_unavailable': return _('Kernel policy unavailable');
+	case 'kernel_monitor_fallback': return _('Kernel monitoring fallback');
 	case 'pwm_write_failed': return _('PWM output failure');
 	case 'pwm_write_recovered': return _('PWM output recovered');
 	case 'kernel_handoff_failed': return _('Kernel handoff failed');
@@ -350,6 +353,7 @@ function eventReason(reason) {
 	switch (reason) {
 	case 'temperature_unavailable': return _('temperature sensor unavailable');
 	case 'kernel_policy_unavailable': return _('kernel thermal policy unavailable');
+	case 'kernel_policy_invalid': return _('kernel policy unsupported for safe userspace control');
 	case 'pwm_write_failed': return _('PWM output could not be written');
 	default: return reason ? reason.replace(/_/g, ' ') : _('unknown error');
 	}
@@ -401,6 +405,9 @@ function formatEventDetails(entry) {
 				eventTemperature(fields.temperature_millic));
 	case 'kernel_policy_unavailable':
 		return _('The kernel thermal policy could not be read; full fan output was requested.');
+	case 'kernel_monitor_fallback':
+		return _('The saved %s mode cannot safely control this kernel policy. The kernel remains in control and hardware monitoring continues.')
+			.format(fields.configured_mode || '?');
 	case 'pwm_write_failed':
 		return _('The requested PWM output could not be written.');
 	case 'pwm_write_recovered':

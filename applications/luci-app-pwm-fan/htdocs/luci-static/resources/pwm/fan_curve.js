@@ -11,6 +11,13 @@
 var svgElement = fanSvg.element;
 var numeric = fanSvg.numeric;
 
+function pwmPercent(pwm, direction) {
+	pwm = numeric(pwm);
+	if (pwm == null || [ 'ascending', 'descending' ].indexOf(direction) < 0)
+		return null;
+	return Math.round((direction === 'descending' ? 255 - pwm : pwm) * 100 / 255);
+}
+
 function parseCurve(points) {
 	var values = Array.isArray(points) ? points : points ? [ points ] : [];
 	return values.map(function(point) {
@@ -32,7 +39,7 @@ function parseKernelPolicy(policy) {
 		if (temperature == null)
 			temperature = numeric(point.temperature);
 		var percent = pwm == null ? numeric(point.percent)
-			: Math.round(pwm * 100 / 255);
+			: pwmPercent(pwm, policy.direction || 'ascending');
 		return temperature == null || percent == null ? null : {
 			temperature: temperature / 1000,
 			percent: percent,
@@ -666,6 +673,7 @@ function createCurveEditor(curve, kernelPolicy, options) {
 		while (liveMarkers.firstChild)
 			liveMarkers.removeChild(liveMarkers.firstChild);
 		var raw = editor.status && editor.status.raw || {};
+		var direction = raw.kernel_policy_direction;
 		if (raw.filtered_temperature_millic != null) {
 			var liveTemperature = raw.filtered_temperature_millic / 1000;
 			var liveX = left + (liveTemperature - 20) / 105 * (right - left);
@@ -679,7 +687,9 @@ function createCurveEditor(curve, kernelPolicy, options) {
 			].forEach(function(item) {
 				if (item[0] == null)
 					return;
-				var percent = Math.round(item[0] * 100 / 255);
+				var percent = pwmPercent(item[0], direction);
+				if (percent == null)
+					return;
 				var markerY = bottom - percent / 100 * (bottom - top);
 				var marker = svgElement('circle', {
 					cx: liveX, cy: markerY, r: 6, fill: item[1],
@@ -805,5 +815,6 @@ function createCurveEditor(curve, kernelPolicy, options) {
 
 return baseclass.extend({
 	create: createCurveEditor,
-	evaluate: evaluateCurve
+	evaluate: evaluateCurve,
+	parseKernelPolicy: parseKernelPolicy
 });

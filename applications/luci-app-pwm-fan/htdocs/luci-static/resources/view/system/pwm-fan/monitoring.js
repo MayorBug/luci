@@ -87,6 +87,8 @@ function healthText(kind, health) {
 		return _('Controller stopped');
 	if (kind === 'controller' && code === 'invalid_configuration')
 		return _('Invalid configuration');
+	if (kind === 'controller' && code === 'kernel_policy_invalid')
+		return _('Kernel monitoring only');
 	if (kind === 'controller' && code === 'disabled')
 		return _('Disabled');
 	if (kind === 'controller' && code === 'kernel')
@@ -147,6 +149,8 @@ function controllerFault(status) {
 	var fanFault = status.control && status.control.fan_fault;
 	if ([ 'kernel', 'auto', 'curve', 'manual' ].indexOf(mode) < 0 ||
 		controller.state === 'healthy')
+		return null;
+	if (controller.code === 'kernel_policy_invalid')
 		return null;
 	if ([ 'controller_stopped', 'controller_stale' ].indexOf(controller.code) >= 0)
 		return mode + ':' + controller.code;
@@ -544,7 +548,8 @@ return view.extend({
 					});
 					dom.content(historyHost, historyGraph.node);
 					updateGraphCurrent();
-					return fan.loadHistory();
+					return fan.loadHistory(status.hardware && status.hardware.kernel &&
+						status.hardware.kernel.direction);
 				}).then(function(history) {
 					updateHistoryDescription(history.hours, history.enabled);
 					fanHistory.setHistory(historyGraph, history);
@@ -574,7 +579,8 @@ return view.extend({
 			poll.add(function() {
 				if (document.hidden || dormant || !fanHistory || !historyGraph)
 					return Promise.resolve();
-				return fan.loadHistory().then(function(history) {
+				return fan.loadHistory(status.hardware && status.hardware.kernel &&
+					status.hardware.kernel.direction).then(function(history) {
 					updateHistoryDescription(history.hours, history.enabled);
 					fanHistory.setHistory(historyGraph, history);
 				});

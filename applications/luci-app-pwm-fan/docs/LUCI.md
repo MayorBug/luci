@@ -12,8 +12,9 @@ It uses no external graph or UI framework.
 
 ### Monitoring
 
-Monitoring shows current daemon status, router history, and static probe data.
-It remains useful after a daemon error.
+Monitoring shows current daemon status and router history; it never requests a
+hardware probe. It remains useful during the live kernel-monitor fallback and
+reports stopped or stale daemons explicitly.
 
 In Disabled mode, Monitoring shows one dormant-state card. The page does not
 probe hardware, load history, or start polling while the daemon is stopped.
