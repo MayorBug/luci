@@ -1354,11 +1354,6 @@ msgstr ""
 msgid "Temperature unavailable"
 msgstr ""
 
-#: applications/luci-app-pwm-fan/htdocs/luci-static/resources/view/system/pwm-fan/monitoring.js:232
-#: applications/luci-app-pwm-fan/htdocs/luci-static/resources/view/system/pwm-fan/monitoring.js:394
-msgid "Temporarily unavailable; using router CPU"
-msgstr ""
-
 #: applications/luci-app-pwm-fan/htdocs/luci-static/resources/view/system/pwm-fan/settings.js:913
 msgid "The configuration changed outside LuCI. Reload this page before saving."
 msgstr ""
@@ -1468,7 +1463,7 @@ msgstr ""
 
 #: applications/luci-app-pwm-fan/htdocs/luci-static/resources/view/system/pwm-fan/settings.js:678
 msgid ""
-"The higher of router CPU and available modem temperature controls fan output."
+"The hottest available CPU, enabled Wi-Fi, or enabled modem temperature controls fan output."
 msgstr ""
 
 #: applications/luci-app-pwm-fan/htdocs/luci-static/resources/pwm/fan_components.js:183
@@ -1501,7 +1496,7 @@ msgstr ""
 #: applications/luci-app-pwm-fan/htdocs/luci-static/resources/pwm/fan_format.js:396
 msgid ""
 "The modem temperature is unavailable from %s; fan control continues using "
-"the router CPU temperature."
+"other available temperature sources."
 msgstr ""
 
 #: applications/luci-app-pwm-fan/htdocs/luci-static/resources/view/system/pwm-fan/settings.js:589
@@ -1683,4 +1678,100 @@ msgstr ""
 
 #: applications/luci-app-pwm-fan/htdocs/luci-static/resources/view/system/pwm-fan/monitoring.js
 msgid "Kernel monitoring only"
+msgstr ""
+
+#: applications/luci-app-pwm-fan/htdocs/luci-static/resources/view/system/pwm-fan/settings.js
+msgid "Wi-Fi"
+msgstr ""
+
+#: applications/luci-app-pwm-fan/htdocs/luci-static/resources/view/system/pwm-fan/settings.js
+msgid "Wi-Fi temperature"
+msgstr ""
+
+#: applications/luci-app-pwm-fan/htdocs/luci-static/resources/view/system/pwm-fan/settings.js
+msgid "Wi-Fi source"
+msgstr ""
+
+#: applications/luci-app-pwm-fan/htdocs/luci-static/resources/view/system/pwm-fan/settings.js
+msgid "Hottest available Wi-Fi radio"
+msgstr ""
+
+#: applications/luci-app-pwm-fan/htdocs/luci-static/resources/view/system/pwm-fan/settings.js
+msgid "%s (unavailable)"
+msgstr ""
+
+#: applications/luci-app-pwm-fan/htdocs/luci-static/resources/view/system/pwm-fan/settings.js
+msgid "Add a Wi-Fi radio temperature to CPU and optional modem control."
+msgstr ""
+
+#: applications/luci-app-pwm-fan/htdocs/luci-static/resources/view/system/pwm-fan/settings.js
+msgid "Choose one radio or automatically use the hottest available Wi-Fi radio."
+msgstr ""
+
+#: applications/luci-app-pwm-fan/htdocs/luci-static/resources/view/system/pwm-fan/settings.js
+msgid "Auto and Curve use the hottest available CPU, enabled Wi-Fi, or enabled modem temperature."
+msgstr ""
+
+#: applications/luci-app-pwm-fan/htdocs/luci-static/resources/pwm/fan_format.js
+msgid "Wi-Fi temperature available"
+msgstr ""
+
+#: applications/luci-app-pwm-fan/htdocs/luci-static/resources/pwm/fan_format.js
+msgid "Wi-Fi temperature unavailable"
+msgstr ""
+
+#: applications/luci-app-pwm-fan/htdocs/luci-static/resources/pwm/fan_format.js
+msgid "Wi-Fi temperature restored"
+msgstr ""
+
+#: applications/luci-app-pwm-fan/htdocs/luci-static/resources/pwm/fan_format.js
+msgid "the configured Wi-Fi source"
+msgstr ""
+
+#: applications/luci-app-pwm-fan/htdocs/luci-static/resources/pwm/fan_format.js
+msgid "The first Wi-Fi temperature from %s was read at %s."
+msgstr ""
+
+#: applications/luci-app-pwm-fan/htdocs/luci-static/resources/pwm/fan_format.js
+msgid "The Wi-Fi temperature is unavailable from %s; fan control continues using CPU and optional modem temperature."
+msgstr ""
+
+#: applications/luci-app-pwm-fan/htdocs/luci-static/resources/pwm/fan_format.js
+msgid "The Wi-Fi temperature from %s is available again at %s."
+msgstr ""
+
+#: applications/luci-app-pwm-fan/htdocs/luci-static/resources/view/system/pwm-fan/monitoring.js
+msgid "Temporarily unavailable; using other temperature sources"
+msgstr ""
+
+#: applications/luci-app-pwm-fan/htdocs/luci-static/resources/view/system/pwm-fan/settings.js
+msgid "Requires pwm-fan-control 1.1 or newer"
+msgstr ""
+
+#: applications/luci-app-pwm-fan/htdocs/luci-static/resources/view/system/pwm-fan/monitoring.js
+msgid "Wi-Fi unavailable"
+msgstr ""
+
+#: applications/luci-app-pwm-fan/htdocs/luci-static/resources/pwm/fan_history.js
+msgid "Wi-Fi %s"
+msgstr ""
+
+#: applications/luci-app-pwm-fan/htdocs/luci-static/resources/pwm/fan_history.js
+msgid "Selected source: %s"
+msgstr ""
+
+#: applications/luci-app-pwm-fan/htdocs/luci-static/resources/pwm/fan_history.js
+msgid "Wi-Fi: not available"
+msgstr ""
+
+#: applications/luci-app-pwm-fan/htdocs/luci-static/resources/pwm/fan_history.js
+msgid "Wi-Fi: %.1f °C"
+msgstr ""
+
+#: applications/luci-app-pwm-fan/htdocs/luci-static/resources/pwm/fan_history.js
+msgid "Wi-Fi —"
+msgstr ""
+
+#: applications/luci-app-pwm-fan/htdocs/luci-static/resources/pwm/fan_history.js
+msgid "Wi-Fi %.1f°C"
 msgstr ""

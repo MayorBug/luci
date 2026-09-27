@@ -83,6 +83,7 @@ function presentStatus(raw, probeResult) {
 	var policy = probe.kernel_policy || {};
 	var configured = raw.configured_mode;
 	var tachEnabled = raw.tach_enabled === true;
+	var wifiSource = raw.wifi_source || 'off';
 	var modemSource = raw.modem_source || 'off';
 	var direction = raw.kernel_policy_direction || policy.direction;
 	var actualPwm = raw.actual_pwm != null ? raw.actual_pwm : found.actual_pwm;
@@ -142,6 +143,16 @@ function presentStatus(raw, probeResult) {
 				policy: policy
 			}
 		},
+		wifi: {
+			enabled: wifiSource !== 'off',
+			source: wifiSource,
+			state: raw.wifi_state || (wifiSource === 'off' ? 'disabled' : 'unknown'),
+			temperature_millic: raw.wifi_temperature_millic == null
+				? null : raw.wifi_temperature_millic,
+			temperature_source: raw.wifi_temperature_source || null,
+			sensors: Array.isArray(raw.wifi_sensors) ? raw.wifi_sensors :
+				Array.isArray(probe.wifi_sensors) ? probe.wifi_sensors : []
+		},
 		modem: {
 			enabled: modemSource !== 'off',
 			source: modemSource,
@@ -188,7 +199,9 @@ function presentHistory(result, direction) {
 			return {
 				timestamp: entry.timestamp,
 				temperature: entry.cpu_temperature_millic,
+				wifi_temperature: entry.wifi_temperature_millic,
 				modem_temperature: entry.modem_temperature_millic,
+				selected_temperature_source: entry.selected_temperature_source || null,
 				setpoint: pwmPercent(entry.actual_pwm, direction),
 				rpm: entry.rpm
 			};

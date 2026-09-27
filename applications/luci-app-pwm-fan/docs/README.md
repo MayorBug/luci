@@ -13,6 +13,9 @@ order when two statements conflict:
 4. [`MONITORING.md`](MONITORING.md) defines status and history data.
 5. [`LUCI.md`](LUCI.md) defines user-interface behavior.
 
+[`TEMPERATURE_SOURCES_PLAN.md`](TEMPERATURE_SOURCES_PLAN.md) defines the
+Hardware-page Wi-Fi temperature-source interface.
+
 The [package README](../README.md) gives user installation and diagnostic
 commands. Report a conflict instead of selecting the lower document.
 

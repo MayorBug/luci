@@ -33,7 +33,8 @@ Settings has three tabs:
 
 - **General** contains the control interval, temperature filter, and filter duration.
 - **Mode** contains the mode selector and the settings for the selected mode.
-- **Hardware** contains monitoring inputs, detected hardware, and device matching.
+- **Hardware** contains monitoring inputs, optional Wi-Fi and Modem source
+  pickers, detected hardware, and device matching.
 
 The mode order is:
 
@@ -53,8 +54,10 @@ The active controller mode continues until the apply action succeeds.
 Auto always shows the target temperature. The advanced option shows the PID
 gains and the integral limit. This option resets when the page opens.
 
-Curve mode shows the curve response, temperature inputs, and curve editor.
-The page loads the curve editor only when the user selects Curve mode.
+Curve mode shows the curve response, CPU/Wi-Fi/Modem temperature inputs, and
+curve editor. The page loads the curve editor only when the user selects Curve
+mode. The Hardware page configures Wi-Fi temperature with the same enable/source
+pattern used for Modem temperature.
 
 Kernel mode explains that Linux controls the fan. The service continues to
 monitor the fan and temperature data.

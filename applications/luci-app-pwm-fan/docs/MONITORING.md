@@ -24,7 +24,7 @@ Status includes:
 - process and monotonic heartbeat identity
 - configured mode, active mode, and runtime role
 - configuration, hardware, control, and history state
-- CPU and optional modem temperature
+- CPU and optional Wi-Fi and modem temperatures
 - selected and filtered temperatures when applicable
 - requested, kernel-floor, effective, and actual raw PWM
 - RPM, tachometer, fan, and modem states
@@ -82,7 +82,8 @@ Representative behavior:
   shown as Kernel, control marked degraded, and read-only monitoring continues
 - required CPU temperature missing: hardware and control error in a control
   role, with a full-output attempt
-- optional modem unavailable: modem degraded, CPU control continues
+- optional Wi-Fi unavailable: Wi-Fi degraded, CPU and fresh modem control continue
+- optional modem unavailable: modem degraded, CPU and available Wi-Fi control continue
 - applied PWM with confirmed zero RPM: `fan_stopped` (the corresponding
   internal fan-watch state is `fan_failed`)
 - required PWM not read back: `pwm_not_applied`
@@ -139,9 +140,11 @@ effective_pwm
 actual_pwm
 rpm
 fan_state
+wifi_temperature_millic
+selected_temperature_source
 ```
 
-Unavailable fields contain literal `null`. Text fields contain a bounded safe
+The parser also accepts legacy ten-column rows. Unavailable fields contain literal `null`. Text fields contain a bounded safe
 token. A malformed or incomplete row is invalid.
 
 ### Cadence
@@ -244,7 +247,7 @@ the history graph and router history after the first status paint. It renders:
 - current mode and runtime role
 - current actual fan output and the diagnostic requested, kernel-floor, and
   effective values from the backend
-- CPU, optional modem, and fan telemetry
+- CPU, optional Wi-Fi and modem, and fan telemetry
 - daemon-owned health and fault details
 - a router-side history chart
 - an explicit confirmed recovery action when appropriate.
@@ -260,7 +263,7 @@ writing it back as a sample. The simple user-facing graph includes:
 - actual fan output
 - RPM
 - CPU temperature
-- modem temperature when present.
+- Wi-Fi and modem temperatures when present, plus the exact selected source.
 
 Requested, kernel-floor, and effective PWM remain in each backend history
 record for diagnostics but are not additional visual series.
@@ -301,7 +304,7 @@ the probe or history. It does not start status or history polling.
 
 Monitoring stops polling while the browser tab is hidden. Live status updates
 cards and legend values. It does not rebuild history paths. The graph redraws
-after new history data, a user control change, or a modem-series change.
+after new history data, a user control change, or an optional-series change.
 
 ## LuCI Logs
 

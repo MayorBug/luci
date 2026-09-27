@@ -69,6 +69,8 @@ function healthText(kind, health) {
 
 	if (kind === 'monitoring' && code === 'fan_stopped')
 		return _('Fan stopped');
+	if (kind === 'monitoring' && code === 'wifi_unavailable')
+		return _('Wi-Fi unavailable');
 	if (kind === 'monitoring' && code === 'modem_unavailable')
 		return _('Modem unavailable');
 	if (kind === 'monitoring' && code === 'tach_unavailable')
@@ -209,6 +211,7 @@ function renderDashboard(status) {
 	var thermal = hardware.thermal || {};
 	var tach = hardware.tach || {};
 	var kernel = hardware.kernel || {};
+	var wifi = status.wifi || {};
 	var modem = status.modem || {};
 	var control = status.control || {};
 	var available = modes.configured != null;
@@ -229,11 +232,16 @@ function renderDashboard(status) {
 	else if (available && tach.state === 'disabled')
 		speedDetail = _('Monitoring disabled');
 	var output = setpoint == null ? 0 : setpoint;
+	var wifiDetail = available && wifi.enabled
+		? wifi.state === 'available'
+			? wifi.temperature_source || wifi.source
+			: _('Temporarily unavailable; using other temperature sources')
+		: _('Optional temperature source');
 	var modemDetail = available && modem.enabled
 		? modem.state === 'waiting'
 			? _('Waiting for first reading')
 			: modem.state === 'lost'
-				? _('Temporarily unavailable; using router CPU')
+				? _('Temporarily unavailable; using other temperature sources')
 				: modem.source === 'qmanager_http'
 					? _('QManager public HTTP')
 					: _('Quectel AT port')
@@ -294,6 +302,10 @@ function renderDashboard(status) {
 			temperatureCard(_('Router CPU'),
 				thermal.temperature_millic,
 				_('Primary temperature source'), 'cpu', 'cpu'),
+			temperatureCard(_('Wi-Fi'),
+				wifi.enabled ? wifi.temperature_millic : null,
+				available && !wifi.enabled ? _('Disabled') : wifiDetail,
+				'wifi', 'wifi'),
 			temperatureCard(modemLabel,
 				modem.enabled
 					? modem.temperature_millic : null,
@@ -348,6 +360,7 @@ function updateDashboard(root, status) {
 	var thermal = hardware.thermal || {};
 	var tach = hardware.tach || {};
 	var kernel = hardware.kernel || {};
+	var wifi = status.wifi || {};
 	var modem = status.modem || {};
 	var control = status.control || {};
 	var available = modes.configured != null;
@@ -393,9 +406,14 @@ function updateDashboard(root, status) {
 	root.querySelector('.pwm-fan-cooling-mode span').textContent = mode;
 	dom.content(root.querySelector('.pwm-fan-pid-summary'), pidSummary(status));
 
+	var wifiDetail = available && wifi.enabled
+		? wifi.state === 'available'
+			? wifi.temperature_source || wifi.source
+			: _('Temporarily unavailable; using other temperature sources')
+		: _('Optional temperature source');
 	var modemDetail = available && modem.enabled
 		? modem.state === 'waiting' ? _('Waiting for first reading')
-			: modem.state === 'lost' ? _('Temporarily unavailable; using router CPU')
+			: modem.state === 'lost' ? _('Temporarily unavailable; using other temperature sources')
 				: modem.source === 'qmanager_http' ? _('QManager public HTTP')
 					: _('Quectel AT port')
 		: _('Optional temperature source');
@@ -404,6 +422,9 @@ function updateDashboard(root, status) {
 	updateTemperatureCard(root.querySelector('.pwm-fan-temperature-card.cpu'),
 		_('Router CPU'), thermal.temperature_millic,
 		_('Primary temperature source'));
+	updateTemperatureCard(root.querySelector('.pwm-fan-temperature-card.wifi'),
+		_('Wi-Fi'), wifi.enabled ? wifi.temperature_millic : null,
+		available && !wifi.enabled ? _('Disabled') : wifiDetail);
 	updateTemperatureCard(root.querySelector('.pwm-fan-temperature-card.modem'),
 		modemLabel, modem.enabled ? modem.temperature_millic : null,
 		available && !modem.enabled ? _('Disabled') : modemDetail);
@@ -529,6 +550,8 @@ return view.extend({
 				fanHistory.setTachEnabled(historyGraph,
 					!!(status.hardware && status.hardware.tach &&
 						status.hardware.tach.enabled));
+				fanHistory.setWifiEnabled(historyGraph,
+					!!(status.wifi && status.wifi.enabled));
 				fanHistory.setModemEnabled(historyGraph,
 					!!(status.modem && status.modem.enabled));
 				fanHistory.updateCurrent(historyGraph, status,

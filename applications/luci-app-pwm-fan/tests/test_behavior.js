@@ -10,6 +10,7 @@ const root = path.join(__dirname, '..', 'htdocs', 'luci-static', 'resources');
 const read = (...parts) => fs.readFileSync(path.join(root, ...parts), 'utf8');
 const curveSource = read('pwm', 'fan_curve.js');
 const fanSource = read('pwm', 'fan.js');
+const historySource = read('pwm', 'fan_history.js');
 const curveCases = fs.readFileSync(path.join(__dirname, 'curve_cases.tsv'), 'utf8');
 
 function fail(message) {
@@ -46,6 +47,16 @@ const fanModule = new Function('baseclass', 'rpc', '_', 'L', 'E', fanSource)(
 	{ extend: value => value },
 	{ declare: () => () => Promise.resolve({}) },
 	value => value, {}, () => {});
+const historyModule = new Function('baseclass', 'dom', 'fanFormat', 'fanSvg',
+	'ui', 'E', '_', 'window', historySource)(
+	{ extend: value => value }, {}, {}, {
+		element: () => ({}),
+		numeric: value => {
+			if (value == null || value === '') return null;
+			value = +value;
+			return Number.isFinite(value) ? value : null;
+		}
+	}, {}, () => ({}), value => value, { localStorage: {} });
 
 const faultStatus = fanModule.presentStatus({
 	configuration_state: 'valid',
@@ -185,6 +196,35 @@ if (fallbackStatus.modes.configured !== 'curve' ||
 	fallbackStatus.control.requested_percent !== null)
 	fail('Kernel monitor fallback does not preserve raw-only read-only status');
 
+const wifiStatus = fanModule.presentStatus({
+	configuration_state: 'valid', configured_mode: 'auto', active_mode: 'auto',
+	controller_running: true, controller_fresh: true, hardware_state: 'healthy',
+	wifi_source: 'auto', wifi_state: 'available',
+	wifi_temperature_millic: 76000, wifi_temperature_source: 'mt7915_phy1',
+	wifi_sensors: [
+		{ name: 'mt7915_phy0', temperature_millic: 57000, available: true, selected: false },
+		{ name: 'mt7915_phy1', temperature_millic: 76000, available: true, selected: true }
+	],
+	selected_temperature_source: 'wifi:mt7915_phy1'
+});
+if (!wifiStatus.wifi.enabled || wifiStatus.wifi.temperature_millic !== 76000 ||
+	wifiStatus.wifi.temperature_source !== 'mt7915_phy1' ||
+	wifiStatus.control.selected_temperature_source !== 'wifi:mt7915_phy1')
+	fail('Wi-Fi status does not preserve controller-selected exact source');
+const missingWifiStatus = fanModule.presentStatus({
+	configuration_state: 'valid', configured_mode: 'auto', wifi_source: 'mt7915_phy9',
+	wifi_state: 'unavailable', wifi_temperature_millic: null,
+	wifi_temperature_source: null, wifi_sensors: []
+});
+if (!missingWifiStatus.wifi.enabled || missingWifiStatus.wifi.temperature_millic !== null)
+	fail('Unavailable Wi-Fi temperature is not preserved as null');
+const legacyWifiStatus = fanModule.presentStatus({
+	configuration_state: 'valid', configured_mode: 'auto'
+});
+if (legacyWifiStatus.wifi.enabled || legacyWifiStatus.wifi.temperature_millic !== null ||
+	legacyWifiStatus.wifi.state !== 'disabled')
+	fail('Legacy status does not default missing Wi-Fi fields to disabled/null');
+
 const invertedHistory = fanModule.presentHistory({
 	available: true,
 	entries: [ { timestamp: 1, actual_pwm: 0, rpm: 1200 } ]
@@ -194,6 +234,21 @@ if (invertedHistory.samples[0].setpoint !== 100)
 if (fanModule.presentHistory({ entries: [ { actual_pwm: 77 } ] }, null)
 	.samples[0].setpoint !== null)
 	fail('History invents cooling percentage without a validated direction');
+const wifiHistory = fanModule.presentHistory({ entries: [ {
+	timestamp: 1, actual_pwm: 100, wifi_temperature_millic: 76000,
+	selected_temperature_source: 'wifi:mt7915_phy1'
+} ] }, 'ascending');
+if (wifiHistory.samples[0].wifi_temperature !== 76000 ||
+	wifiHistory.samples[0].selected_temperature_source !== 'wifi:mt7915_phy1')
+	fail('History drops the controller-recorded Wi-Fi winner');
+const normalizedWifiHistory = historyModule.normalizeSamples(wifiHistory);
+if (normalizedWifiHistory[0].wifiTemperature !== 76 ||
+	normalizedWifiHistory[0].selectedTemperatureSource !== 'wifi:mt7915_phy1')
+	fail('History graph drops the Wi-Fi series or exact winner');
+const legacyHistory = fanModule.presentHistory({ entries: [ { actual_pwm: 100 } ] }, 'ascending');
+if (legacyHistory.samples[0].wifi_temperature != null ||
+	legacyHistory.samples[0].selected_temperature_source != null)
+	fail('Legacy history invents Wi-Fi telemetry');
 
 const invertedPolicy = curveModule.parseKernelPolicy({
 	direction: 'descending',

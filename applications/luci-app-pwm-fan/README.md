@@ -4,7 +4,7 @@
 
 The application supplies these functions:
 
-- live fan, CPU, modem, kernel-floor, policy-direction, and subsystem status
+- live fan, CPU, optional Wi-Fi and modem, kernel-floor, policy-direction, and subsystem status
 - router history graphs with selectable data series
 - configuration for all controller modes
 - an interactive temperature-curve editor

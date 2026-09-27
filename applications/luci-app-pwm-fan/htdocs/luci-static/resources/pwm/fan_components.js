@@ -5,9 +5,10 @@
 'require baseclass';
 
 var SVG_NS = 'http://www.w3.org/2000/svg';
-var STYLE_REVISION = '5';
+var STYLE_REVISION = '6';
 var ICON_PATHS = {
 	cpu: 'M9 9h6v6H9z M9 2v3 M12 2v3 M15 2v3 M9 19v3 M12 19v3 M15 19v3 M2 9h3 M2 12h3 M2 15h3 M19 9h3 M19 12h3 M19 15h3 M6 6h12v12H6z',
+	wifi: 'M3 9a14 14 0 0 1 18 0 M6 12a9 9 0 0 1 12 0 M9 15a4.5 4.5 0 0 1 6 0 M12 19h.01',
 	modem: 'M5 13h14a2 2 0 0 1 2 2v4H3v-4a2 2 0 0 1 2-2z M8 16h.01 M12 16h.01 M12 13V5 M8.5 8.5a5 5 0 0 1 7 0 M6 6a8.5 8.5 0 0 1 12 0',
 	shield: 'M12 3l7 3v5c0 4.6-2.9 8.2-7 10-4.1-1.8-7-5.4-7-10V6l7-3z M9 12l2 2 4-4',
 	mode: 'M4 17l5-5 3 3 7-8 M16 7h3v3',

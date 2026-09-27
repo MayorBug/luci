@@ -1,6 +1,7 @@
 .pwm-fan {
 	--pwm-accent: #3498db;
 	--pwm-cpu: #e67e22;
+	--pwm-wifi: #16a085;
 	--pwm-modem: #9b59b6;
 	--pwm-success: #5cb85c;
 	--pwm-warning: #f0ad4e;
@@ -89,6 +90,11 @@
 	color: var(--pwm-cpu);
 }
 
+.pwm-fan-metric.wifi .pwm-fan-metric-icon {
+	background: rgba(22, 160, 133, .14);
+	color: var(--pwm-wifi);
+}
+
 .pwm-fan-metric.modem .pwm-fan-metric-icon {
 	background: rgba(155, 89, 182, .14);
 	color: var(--pwm-modem);
@@ -112,6 +118,7 @@
 
 .pwm-fan-metric-detail {
 	margin-top: .2rem;
+	overflow-wrap: anywhere;
 	color: var(--pwm-muted);
 	font-size: .78rem;
 }
@@ -280,6 +287,10 @@
 	font-weight: 600;
 }
 
+.pwm-fan-temperature-heading .pwm-fan-muted {
+	overflow-wrap: anywhere;
+}
+
 .pwm-fan-temperature-value {
 	font-size: 1.45rem;
 	white-space: nowrap;
@@ -288,6 +299,11 @@
 .pwm-fan-temperature-card.cpu .pwm-fan-status-icon,
 .pwm-fan-temperature-card.cpu .pwm-fan-temperature-value {
 	color: var(--pwm-cpu);
+}
+
+.pwm-fan-temperature-card.wifi .pwm-fan-status-icon,
+.pwm-fan-temperature-card.wifi .pwm-fan-temperature-value {
+	color: var(--pwm-wifi);
 }
 
 .pwm-fan-temperature-card.modem .pwm-fan-status-icon,
@@ -583,6 +599,12 @@
 	gap: .85rem 1rem;
 }
 
+.pwm-fan-temperature-grid {
+	display: grid;
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+	gap: .85rem;
+}
+
 .pwm-fan-field {
 	display: grid;
 	align-content: start;
@@ -795,14 +817,16 @@
 }
 
 @media (max-width: 1100px) {
-	.pwm-fan-monitor-overview {
+	.pwm-fan-monitor-overview,
+	.pwm-fan-curve-grid {
 		grid-template-columns: 1fr;
 	}
 }
 
 @media (max-width: 700px) {
 	.pwm-fan-grid-2,
-	.pwm-fan-field-grid {
+	.pwm-fan-field-grid,
+	.pwm-fan-temperature-grid {
 		grid-template-columns: 1fr;
 	}
 

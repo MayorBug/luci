@@ -171,7 +171,8 @@ function history() {
 	let entries = [];
 	for (let line in split(text, '\n')) {
 		let field = split(line, '\t');
-		if (length(field) != 10 || !match(field[0], /^[0-9]+$/) ||
+		if ((length(field) != 10 && length(field) != 12) ||
+		    !match(field[0], /^[0-9]+$/) ||
 		    !match(field[1], /^(kernel|auto|curve|manual)$/))
 			continue;
 		let valid = true;
@@ -179,6 +180,14 @@ function history() {
 			if (!match(field[i], /^(null|[0-9]+)$/)) valid = false;
 		if (!valid || !match(field[9], /^[a-z_]+$/))
 			continue;
+		let wifi = null, selected = null;
+		if (length(field) == 12) {
+			if (!match(field[10], /^(null|[0-9]+)$/) ||
+			    !match(field[11], /^(null|cpu|modem|wifi:[A-Za-z0-9_.-]+)$/))
+				continue;
+			wifi = field_number(field[10]);
+			selected = field[11] == 'null' ? null : field[11];
+		}
 		push(entries, {
 			timestamp: int(field[0]), mode: field[1],
 			cpu_temperature_millic: field_number(field[2]),
@@ -187,7 +196,8 @@ function history() {
 			kernel_floor_pwm: field_number(field[5]),
 			effective_pwm: field_number(field[6]),
 			actual_pwm: field_number(field[7]), rpm: field_number(field[8]),
-			fan_state: field[9]
+			fan_state: field[9], wifi_temperature_millic: wifi,
+			selected_temperature_source: selected
 		});
 	}
 	if (length(entries) > 1440)

@@ -315,6 +315,9 @@ function eventName(code) {
 	case 'fan_stopped': return _('Fan stopped');
 	case 'fan_recovered': return _('Fan recovered');
 	case 'temperature_unavailable': return _('Temperature sensor failure');
+	case 'wifi_temperature_available': return _('Wi-Fi temperature available');
+	case 'wifi_temperature_unavailable': return _('Wi-Fi temperature unavailable');
+	case 'wifi_temperature_recovered': return _('Wi-Fi temperature restored');
 	case 'modem_temperature_available': return _('Modem temperature available');
 	case 'modem_temperature_lost': return _('Modem temperature unavailable');
 	case 'modem_temperature_recovered': return _('Modem temperature restored');
@@ -392,12 +395,23 @@ function formatEventDetails(entry) {
 		return _('Fan speed recovered to %s RPM.').format(fields.rpm || '?');
 	case 'temperature_unavailable':
 		return _('Temperature input was unavailable; full fan output was requested.');
+	case 'wifi_temperature_available':
+		return _('The first Wi-Fi temperature from %s was read at %s.')
+			.format(fields.source || _('the configured Wi-Fi source'),
+				eventTemperature(fields.temperature_millic));
+	case 'wifi_temperature_unavailable':
+		return _('The Wi-Fi temperature is unavailable from %s; fan control continues using CPU and optional modem temperature.')
+			.format(fields.source || _('the configured Wi-Fi source'));
+	case 'wifi_temperature_recovered':
+		return _('The Wi-Fi temperature from %s is available again at %s.')
+			.format(fields.source || _('the configured Wi-Fi source'),
+				eventTemperature(fields.temperature_millic));
 	case 'modem_temperature_available':
 		return _('The first modem temperature from %s was read at %s.')
 			.format(fields.source || _('the configured modem source'),
 				eventTemperature(fields.temperature_millic));
 	case 'modem_temperature_lost':
-		return _('The modem temperature is unavailable from %s; fan control continues using the router CPU temperature.')
+		return _('The modem temperature is unavailable from %s; fan control continues using other available temperature sources.')
 			.format(fields.source || _('the configured modem source'));
 	case 'modem_temperature_recovered':
 		return _('The modem temperature from %s is available again at %s.')

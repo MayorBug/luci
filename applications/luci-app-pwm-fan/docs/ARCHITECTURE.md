@@ -53,8 +53,9 @@ from the active Kernel observer and does not offer userspace control as active.
 Settings paints a loading shell first. It then loads configuration and status
 at the same time. It requests one hardware probe only when Hardware opens or
 Curve mode needs policy data. Hardware and the Curve mode editor reuse the
-probe result. Probe data contains device paths, policy direction and points,
-applicability diagnostics, and one read-only CPU/PWM/RPM telemetry sample. An
+probe result. Probe data contains device paths, Wi-Fi temperature candidates,
+policy direction and points, applicability diagnostics, and one read-only
+CPU/PWM/RPM telemetry sample. An
 invalid policy may still report `observation_available=true`; probing never
 writes PWM.
 

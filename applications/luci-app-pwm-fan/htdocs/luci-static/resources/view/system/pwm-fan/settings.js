@@ -16,20 +16,29 @@ function loadDraft(config) {
 	var draft = {};
 	var values = config && config.values || {};
 	var defaults = config && config.defaults || {};
+	var wifiSupported = Object.prototype.hasOwnProperty.call(values, 'wifi_source') ||
+		Object.prototype.hasOwnProperty.call(defaults, 'wifi_source');
 	[
 		'manual_output_percent', 'manual_timeout_min', 'control_interval_s',
 		'curve_points', 'curve_hysteresis_c', 'tach_enabled',
 		'modem_at_device', 'modem_http_host', 'modem_interval_s',
 		'pid_target_c', 'pid_integral_limit',
 		'mode', 'curve_style', 'temperature_filter', 'temperature_filter_duration_s',
-		'modem_monitoring', 'modem_source', 'pid_kp', 'pid_ki', 'pid_kd',
+		'wifi_monitoring', 'wifi_source', 'modem_monitoring', 'modem_source',
+		'pid_kp', 'pid_ki', 'pid_kd',
 		'hwmon_name', 'thermal_zone'
 	].forEach(function(key) {
 		var source = key;
 		var value = values[source];
+		var wifiSource = values.wifi_source == null
+			? defaults.wifi_source : values.wifi_source;
 		var modemSource = values.modem_source == null
 			? defaults.modem_source : values.modem_source;
-		if (key === 'modem_monitoring')
+		if (key === 'wifi_monitoring')
+			value = wifiSource == null || wifiSource === 'off' ? '0' : '1';
+		else if (key === 'wifi_source')
+			value = wifiSource === 'off' ? 'auto' : wifiSource;
+		else if (key === 'modem_monitoring')
 			value = modemSource === 'off' ? '0' : '1';
 		else if (key === 'modem_source')
 			value = modemSource === 'quectel_at' ? 'at'
@@ -39,6 +48,10 @@ function loadDraft(config) {
 			value = value.split(',');
 		if (value == null || value === '')
 			value = defaults[source];
+		if (key === 'wifi_monitoring' && value == null)
+			value = '0';
+		if (key === 'wifi_source' && value == null)
+			value = 'auto';
 		if (key === 'modem_monitoring' && value == null)
 			value = '0';
 		if (key === 'modem_source' && value == null)
@@ -48,11 +61,12 @@ function loadDraft(config) {
 				value == null ? [] : [ value ];
 		draft[key] = Array.isArray(value) ? value.slice() : String(value);
 	});
+	draft._wifi_supported = wifiSupported;
 	return draft;
 }
 
 function controllerConfig(draft) {
-	return {
+	var result = {
 		config_version: '2',
 		mode: draft.mode,
 		control_interval_s: draft.control_interval_s,
@@ -80,6 +94,9 @@ function controllerConfig(draft) {
 		manual_output_percent: draft.manual_output_percent,
 		manual_timeout_min: draft.manual_timeout_min
 	};
+	if (draft._wifi_supported)
+		result.wifi_source = draft.wifi_monitoring === '1' ? draft.wifi_source : 'off';
+	return result;
 }
 
 function setPageActionsDisabled(disabled) {
@@ -334,6 +351,13 @@ return view.extend({
 				if (curveEditor)
 					curveEditor.setValue(draft[key]);
 			}
+			else if (key === 'wifi_source') {
+				draft.wifi_monitoring = value === 'off' ? '0' : '1';
+				draft.wifi_source = value === 'off' ? 'auto' : String(value);
+				controls.wifi_monitoring.querySelector('input').checked =
+					draft.wifi_monitoring === '1';
+				controls.wifi_source.value = draft.wifi_source;
+			}
 			else if (key === 'modem_source') {
 				draft.modem_monitoring = value === 'off' ? '0' : '1';
 				draft.modem_source = value === 'quectel_at' ? 'at' : 'http';
@@ -430,12 +454,36 @@ return view.extend({
 				.then(applyStatus);
 		}
 
+		function populateWifiSources(probe) {
+			var select = controls.wifi_source;
+			if (!select)
+				return;
+			var seen = {};
+			dom.content(select, E([]));
+			select.appendChild(E('option', { 'value': 'auto' }, [
+				_('Hottest available Wi-Fi radio')
+			]));
+			(probe && probe.wifi_sensors || []).forEach(function(sensor) {
+				var name = sensor && sensor.name;
+				if (!name || seen[name])
+					return;
+				seen[name] = true;
+				select.appendChild(E('option', { 'value': name }, [ name ]));
+			});
+			if (draft.wifi_source !== 'auto' && !seen[draft.wifi_source])
+				select.appendChild(E('option', { 'value': draft.wifi_source }, [
+					_('%s (unavailable)').format(draft.wifi_source)
+				]));
+			select.value = draft.wifi_source;
+		}
+
 		function ensureProbe() {
 			if (!probePromise) {
 				probePromise = fan.loadProbe().then(function(probe) {
 					if (probe && probe.error === 'probe_unavailable')
 						probePromise = null;
 					probeResult = probe;
+					populateWifiSources(probe);
 					applyStatus(fan.withProbe(status, probe));
 					return probe;
 				});
@@ -484,7 +532,13 @@ return view.extend({
 
 		function renderInputs() {
 			var thermal = status.hardware && status.hardware.thermal || {};
+			var wifi = status.wifi || {};
 			var modem = status.modem || {};
+			var wifiText = draft.wifi_monitoring !== '1'
+				? _('Disabled')
+				: wifi.temperature_millic == null
+					? _('Waiting')
+					: fanFormat.formatTemperature(wifi.temperature_millic);
 			var modemText = draft.modem_monitoring !== '1'
 				? _('Disabled')
 				: !modem.enabled
@@ -496,12 +550,17 @@ return view.extend({
 			var controlling = (activeMode === 'auto' || activeMode === 'curve')
 				? status.control && status.control.selected_temperature_source : null;
 			dom.content(inputsBody, E('div', {
-				'class': 'pwm-fan-field-grid'
+				'class': 'pwm-fan-temperature-grid'
 			}, [
 				fanComponents.metric(_('Router CPU'),
 					fanFormat.formatTemperature(thermal.temperature_millic),
 					controlling === 'cpu' ? _('Controlling') : _('Required'),
 					'cpu', fanComponents.icon('cpu')),
+				fanComponents.metric(_('Wi-Fi'), wifiText,
+					controlling && controlling.indexOf('wifi:') === 0
+						? _('Controlling') : wifi.temperature_source ||
+							(draft.wifi_monitoring === '1' ? _('Enabled') : _('Optional')),
+					'wifi', fanComponents.icon('wifi')),
 				fanComponents.metric(modemLabel, modemText,
 					controlling === 'modem' ? _('Controlling') : draft.modem_monitoring === '1'
 						? _('Enabled') : _('Optional'),
@@ -515,6 +574,7 @@ return view.extend({
 			var pid = draft.mode === 'auto';
 			var disabled = draft.mode === 'disabled';
 			var dormant = activeMode === 'disabled';
+			var wifi = draft.wifi_monitoring === '1';
 			var modem = draft.modem_monitoring === '1';
 			dependency('manual_output_percent', manual);
 			dependency('manual_timeout_min', manual);
@@ -525,6 +585,7 @@ return view.extend({
 			dependency('pid_integral_limit', pid && showAdvancedPid);
 			dependency('curve_style', curve);
 			dependency('curve_hysteresis_c', curve && draft.curve_style === 'step');
+			dependency('wifi_source', wifi);
 			dependency('modem_source', modem);
 			dependency('modem_at_device', modem && draft.modem_source === 'at');
 			dependency('modem_http_host', modem && draft.modem_source === 'http');
@@ -675,12 +736,12 @@ return view.extend({
 			curveFields);
 		var curveField = field('curve_points', _('Temperature curve'),
 			curveHost,
-			_('The higher of router CPU and available modem temperature controls fan output.'), true);
+			_('The hottest available CPU, enabled Wi-Fi, or enabled modem temperature controls fan output.'), true);
 		panels.curveEditor = E('section', {
 			'class': 'pwm-fan-card pwm-fan-curve-card'
 		}, [ curveField ]);
 		panels.curveInputs = fanComponents.card(_('Temperature inputs'), inputsBody);
-		panels.curveGrid = E('div', { 'class': 'pwm-fan-grid-2' }, [
+		panels.curveGrid = E('div', { 'class': 'pwm-fan-grid-2 pwm-fan-curve-grid' }, [
 			panels.curveControls,
 			panels.curveInputs
 		]);
@@ -702,6 +763,12 @@ return view.extend({
 		var tachSwitch = switchControl('tach_enabled',
 			_('Tachometer monitoring'), !(status.hardware &&
 				status.hardware.tach && status.hardware.tach.available));
+		var wifiSwitch = switchControl('wifi_monitoring',
+			_('Wi-Fi temperature'), !draft._wifi_supported);
+		var wifiChoices = { auto: _('Hottest available Wi-Fi radio') };
+		if (draft.wifi_source !== 'auto')
+			wifiChoices[draft.wifi_source] = draft.wifi_source;
+		var wifiSource = selectControl('wifi_source', wifiChoices);
 		var modemSwitch = switchControl('modem_monitoring',
 			_('Modem temperature'));
 		var modemSource = selectControl('modem_source', {
@@ -736,9 +803,15 @@ return view.extend({
 						status.hardware.tach.available ? ''
 						: _('Not exposed by the driver');
 				}), _('Disable for a fan without a tachometer wire.')),
+			field('wifi_monitoring', _('Wi-Fi temperature'),
+				switchRow('wifi_monitoring', wifiSwitch,
+					draft._wifi_supported ? null : _('Requires pwm-fan-control 1.1 or newer')),
+				_('Add a Wi-Fi radio temperature to CPU and optional modem control.')),
+			field('wifi_source', _('Wi-Fi source'), wifiSource,
+				_('Choose one radio or automatically use the hottest available Wi-Fi radio.')),
 			field('modem_monitoring', _('Modem temperature'),
 				switchRow('modem_monitoring', modemSwitch),
-				_('The controller uses the higher available CPU or modem temperature.')),
+				_('Auto and Curve use the hottest available CPU, enabled Wi-Fi, or enabled modem temperature.')),
 			field('modem_source', _('Modem source'), modemSource,
 				modemSourceHelp),
 			field('modem_at_device', _('Modem AT port'),

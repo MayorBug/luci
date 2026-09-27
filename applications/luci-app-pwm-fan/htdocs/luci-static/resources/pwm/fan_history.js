@@ -14,7 +14,7 @@ var METRIC_STORAGE_KEY = 'pwm-fan.graph.metric';
 var SERIES_STORAGE_KEY = 'pwm-fan.graph.series';
 var WINDOW_STORAGE_KEY = 'pwm-fan.graph.window';
 var METRICS = [ 'setpoint', 'rpm' ];
-var SERIES = [ 'setpoint', 'rpm', 'temperature', 'modemTemperature' ];
+var SERIES = [ 'setpoint', 'rpm', 'temperature', 'wifiTemperature', 'modemTemperature' ];
 var WINDOWS = [ 'all', '0.25', '0.5', '1', '3', '6', '12', '24' ];
 var WIDTH = 1000;
 var HEIGHT = 340;
@@ -105,6 +105,9 @@ function historySamples(history) {
 			timestamp: numeric(sample.timestamp),
 			temperature: sample.temperature == null ? null :
 				numeric(sample.temperature / 1000),
+			wifiTemperature: sample.wifi_temperature == null ? null :
+				numeric(sample.wifi_temperature / 1000),
+			selectedTemperatureSource: sample.selected_temperature_source || null,
 			modemTemperature: sample.modem_temperature == null ? null :
 				numeric(sample.modem_temperature / 1000),
 			setpoint: numeric(sample.setpoint),
@@ -269,12 +272,14 @@ function drawGraph(graph) {
 	graph.visibleSamples = samples;
 	var metricVisible = graph.seriesVisible[graph.metric];
 	var cpuVisible = graph.seriesVisible.temperature;
+	var wifiVisible = graph.wifiEnabled && graph.seriesVisible.wifiTemperature;
 	var modemVisible = graph.modemEnabled &&
 		graph.seriesVisible.modemTemperature;
-	var temperatureVisible = cpuVisible || modemVisible;
+	var temperatureVisible = cpuVisible || wifiVisible || modemVisible;
 
 	if (samples.length === 0) {
 		graph.temperatureLine.setAttribute('d', '');
+		graph.wifiTemperatureLine.setAttribute('d', '');
 		graph.modemTemperatureLine.setAttribute('d', '');
 		graph.metricArea.setAttribute('d', '');
 		graph.summary.textContent = metricVisible
@@ -291,6 +296,13 @@ function drawGraph(graph) {
 		}).filter(function(value) {
 			return value != null;
 		});
+	}
+	if (wifiVisible) {
+		temperatures = temperatures.concat(samples.map(function(sample) {
+			return sample.wifiTemperature;
+		}).filter(function(value) {
+			return value != null;
+		}));
 	}
 	if (modemVisible) {
 		temperatures = temperatures.concat(samples.map(function(sample) {
@@ -318,6 +330,9 @@ function drawGraph(graph) {
 		metricVisible, temperatureVisible);
 	graph.temperatureLine.setAttribute('d', cpuVisible
 		? linePath(coordinates(samples, 'temperature',
+			temperatureMaximum, now, seconds)) : '');
+	graph.wifiTemperatureLine.setAttribute('d', wifiVisible
+		? linePath(coordinates(samples, 'wifiTemperature',
 			temperatureMaximum, now, seconds)) : '');
 	graph.modemTemperatureLine.setAttribute('d', modemVisible
 		? linePath(coordinates(samples, 'modemTemperature',
@@ -397,12 +412,17 @@ function createGraph(history) {
 		fill: 'none', stroke: '#e67e22', 'stroke-width': '3',
 		'vector-effect': 'non-scaling-stroke'
 	});
+	var wifiTemperatureLine = svgElement('path', {
+		fill: 'none', stroke: '#16a085', 'stroke-width': '3',
+		'vector-effect': 'non-scaling-stroke'
+	});
 	var modemTemperatureLine = svgElement('path', {
 		fill: 'none', stroke: '#9b59b6', 'stroke-width': '3',
 		'vector-effect': 'non-scaling-stroke'
 	});
 	svg.appendChild(metricArea);
 	svg.appendChild(temperatureLine);
+	svg.appendChild(wifiTemperatureLine);
 	svg.appendChild(modemTemperatureLine);
 	var hoverLine = svgElement('line', {
 		x1: LEFT, y1: TOP, x2: LEFT, y2: BOTTOM,
@@ -418,6 +438,7 @@ function createGraph(history) {
 	selector.value = storedMetric();
 	var metricLabel = E('span');
 	var temperatureLabel = E('span');
+	var wifiTemperatureLabel = E('span');
 	var modemTemperatureLabel = E('span');
 	var metricLegend = E('span', {
 		'role': 'button',
@@ -431,6 +452,12 @@ function createGraph(history) {
 		'class': 'pwm-fan-legend',
 		style: '--pwm-legend-color:#e67e22'
 	}, [ temperatureLabel ]);
+	var wifiTemperatureLegend = E('span', {
+		'role': 'button',
+		'tabindex': '0',
+		'class': 'pwm-fan-legend',
+		style: 'display:none;--pwm-legend-color:#16a085'
+	}, [ wifiTemperatureLabel ]);
 	var modemTemperatureLegend = E('span', {
 		'role': 'button',
 		'tabindex': '0',
@@ -467,6 +494,7 @@ function createGraph(history) {
 				E('div', { 'class': 'pwm-fan-history-legends' }, [
 					metricLegend,
 					temperatureLegend,
+					wifiTemperatureLegend,
 					modemTemperatureLegend
 				]),
 				E('label', {
@@ -483,16 +511,20 @@ function createGraph(history) {
 		metric: selector.value,
 		samples: historySamples(history),
 		current: null,
+		wifiEnabled: false,
 		modemEnabled: false,
 		seriesVisible: storedSeriesVisibility(),
 		metricArea: metricArea,
 		temperatureLine: temperatureLine,
+		wifiTemperatureLine: wifiTemperatureLine,
 		modemTemperatureLine: modemTemperatureLine,
 		metricLabel: metricLabel,
 		temperatureLabel: temperatureLabel,
+		wifiTemperatureLabel: wifiTemperatureLabel,
 		modemTemperatureLabel: modemTemperatureLabel,
 		metricLegend: metricLegend,
 		temperatureLegend: temperatureLegend,
+		wifiTemperatureLegend: wifiTemperatureLegend,
 		modemTemperatureLegend: modemTemperatureLegend,
 		summary: summary,
 		leftLabels: leftLabels,
@@ -547,6 +579,14 @@ function createGraph(history) {
 					? _('not available')
 					: '%.1f °C'.format(sample.temperature))
 			]),
+			graph.wifiEnabled ? E('span', {}, [
+				_('Wi-Fi %s').format(sample.wifiTemperature == null
+					? _('not available')
+					: '%.1f °C'.format(sample.wifiTemperature))
+			]) : '',
+			sample.selectedTemperatureSource ? E('span', {}, [
+				_('Selected source: %s').format(sample.selectedTemperatureSource)
+			]) : '',
 			graph.modemEnabled ? E('span', {}, [
 				_('Modem %s').format(sample.modemTemperature == null
 					? _('not available')
@@ -617,6 +657,7 @@ function createGraph(history) {
 		return graph.metric;
 	});
 	bindLegend(graph, temperatureLegend, 'temperature');
+	bindLegend(graph, wifiTemperatureLegend, 'wifiTemperature');
 	bindLegend(graph, modemTemperatureLegend, 'modemTemperature');
 	updateLabels(graph);
 	drawGraph(graph);
@@ -632,6 +673,16 @@ function setTachEnabled(graph, enabled) {
 		updateLabels(graph);
 		drawGraph(graph);
 	}
+}
+
+function setWifiEnabled(graph, enabled) {
+	enabled = !!enabled;
+	if (graph.wifiEnabled === enabled)
+		return;
+	graph.wifiEnabled = enabled;
+	graph.wifiTemperatureLegend.style.display = enabled ? '' : 'none';
+	updateLabels(graph);
+	drawGraph(graph);
 }
 
 function setModemEnabled(graph, enabled) {
@@ -655,6 +706,8 @@ function updateLabels(graph) {
 		graph.seriesVisible[graph.metric]);
 	updateLegendState(graph.temperatureLegend,
 		graph.seriesVisible.temperature);
+	updateLegendState(graph.wifiTemperatureLegend,
+		graph.seriesVisible.wifiTemperature);
 	updateLegendState(graph.modemTemperatureLegend,
 		graph.seriesVisible.modemTemperature);
 	var value = current == null ? null : current[graph.metric];
@@ -679,6 +732,17 @@ function updateLabels(graph) {
 		temperature == null ? _('CPU —')
 			: _('CPU %.1f°C').format(temperature));
 	graph.temperatureLegend.setAttribute('aria-label', temperatureText);
+	if (graph.wifiEnabled) {
+		var wifiTemperature = current == null ? null : current.wifiTemperature;
+		var wifiText = wifiTemperature == null
+			? _('Wi-Fi: not available')
+			: _('Wi-Fi: %.1f °C').format(wifiTemperature);
+		graph.wifiTemperatureLabel.textContent = wifiText;
+		graph.wifiTemperatureLegend.setAttribute('data-compact',
+			wifiTemperature == null ? _('Wi-Fi —')
+				: _('Wi-Fi %.1f°C').format(wifiTemperature));
+		graph.wifiTemperatureLegend.setAttribute('aria-label', wifiText);
+	}
 	if (graph.modemEnabled) {
 		var modemTemperature = current == null
 			? null : current.modemTemperature;
@@ -705,6 +769,7 @@ function updateCurrent(graph, status, setpoint) {
 	var hardware = status.hardware || {};
 	var thermal = hardware.thermal || {};
 	var tach = hardware.tach || {};
+	var wifi = status.wifi || {};
 	var modem = status.modem || {};
 	if (!hardware.available || status.timestamp == null ||
 		!(status.service && status.service.running)) {
@@ -716,6 +781,10 @@ function updateCurrent(graph, status, setpoint) {
 		timestamp: status.timestamp,
 		temperature: thermal.temperature_millic == null ? null :
 			thermal.temperature_millic / 1000,
+		wifiTemperature: wifi.temperature_millic == null ? null :
+			wifi.temperature_millic / 1000,
+		selectedTemperatureSource: status.control &&
+			status.control.selected_temperature_source || null,
 		modemTemperature: modem.temperature_millic == null ? null :
 			modem.temperature_millic / 1000,
 		setpoint: numeric(setpoint),
@@ -726,8 +795,10 @@ function updateCurrent(graph, status, setpoint) {
 
 return baseclass.extend({
 	create: createGraph,
+	normalizeSamples: historySamples,
 	setHistory: setHistory,
 	updateCurrent: updateCurrent,
 	setTachEnabled: setTachEnabled,
+	setWifiEnabled: setWifiEnabled,
 	setModemEnabled: setModemEnabled
 });
